@@ -8,6 +8,33 @@
 #include <sstream>
 #include <algorithm>
 
+
+#ifdef _WIN32
+#include <windows.h>
+int ReadFile(const std::string& filename, std::vector<unsigned char>& buffer)
+{
+    HANDLE hFile = CreateFile(filename.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        return -1;
+    }
+
+    DWORD dwFileSize = GetFileSize(hFile, NULL);
+    buffer.resize(dwFileSize);
+
+    DWORD dwBytesRead;
+    if (!ReadFile(hFile, buffer.data(), dwFileSize, &dwBytesRead, NULL))
+    {
+        CloseHandle(hFile);
+        return -1;
+    }
+
+    CloseHandle(hFile);
+    return 0;
+}
+#endif // WIN32
+
+
 std::vector<std::string> types;
 
 static void init()
@@ -36,43 +63,49 @@ int main(int argc, char* argv[])
 {
     init();
     int retCode;
+    std::string filepath = argv[1];
+#ifndef _WIN32
     if (argc < 2)
     {
         std::cout << "Error: Use Filename as argument!" << std::endl;
-        retCode = 1;
+        return 1;
     }
-    else if (!std::filesystem::exists(argv[1]))
+    else if (!std::filesystem::exists(filepath))
     {
-        std::cout << "Error: File does not exist!" << std::endl;
-        retCode = 1;
+        std::cout << "Error: File does not exist! filepath: " << filepath << " current path: " << std::filesystem::current_path() << std::endl;
+        return 1;
     }
-    else
+    std::ifstream input( filepath, std::ios::binary );
+
+    std::vector<unsigned char> file_buffer(std::istreambuf_iterator<char>(input), {});
+#else
+    std::vector<unsigned char> file_buffer;
+    int ret = ReadFile(filepath, file_buffer);
+    if (ret != 0)
     {
-        std::ifstream input( argv[1], std::ios::binary );
+        std::cout << "Error: Could not read file!" << std::endl;
+        return 1;
+    }
+#endif // WIN32
 
-        std::vector<unsigned char> file_buffer(std::istreambuf_iterator<char>(input), {});
-
-        std::string type = "None";
-        for (std::string& name : types)
+    std::string type = "None";
+    for (std::string& name : types)
+    {
+        std::vector< unsigned char > pattern;
+        for(unsigned char character : name)
         {
-            std::vector< unsigned char > pattern;
-            for(unsigned char character : name)
-            {
-                pattern.push_back(character);
-            }
-
-            auto it = std::search(std::begin(file_buffer), std::end(file_buffer), std::begin(pattern), std::end(pattern));
-
-            if (std::end(file_buffer) != it)
-            {
-                type = name;
-                break;
-            }
+            pattern.push_back(character);
         }
-        std::cout << type << std::endl;
 
+        auto it = std::search(std::begin(file_buffer), std::end(file_buffer), std::begin(pattern), std::end(pattern));
 
+        if (std::end(file_buffer) != it)
+        {
+            type = name;
+            break;
+        }
     }
+    std::cout << type << std::endl;
 
     return retCode;
 }

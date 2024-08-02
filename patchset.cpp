@@ -1,5 +1,6 @@
 #include "patchset.h"
 #include <algorithm>
+#include <iostream>
 
 
 void PatchSet::addPatch(const std::vector<unsigned char>& marker,
@@ -86,6 +87,15 @@ int64_t PatchSet::findIndex(std::vector<unsigned char>* data, Patch* patch)
     return index;
 }
 
+std::string toHex(unsigned char c)
+{
+    std::string hex = "0123456789ABCDEF";
+    std::string result = "";
+    result += hex[c >> 4];
+    result += hex[c & 0x0F];
+    return result;
+}
+
 void PatchSet::applyPatches(std::vector<unsigned char>* data)
 {
     uint8_t index = 0U;
@@ -100,10 +110,32 @@ void PatchSet::applyPatches(std::vector<unsigned char>* data)
                 (*data)[index] = replace_byte;
                 index++;
             }
+            std::string successmsg = "Patch applied successfully.\nPattern";
+            for (auto byte : pair.Marker)
+            {
+                successmsg += " 0x" + toHex(byte);
+            }
+            successmsg += "\nReplace";
+            for (auto byte : pair.Replace)
+            {
+                successmsg += " 0x" + toHex(byte);
+            }
+            std::cerr << successmsg << std::endl << std::endl;
+
         }
         else
         {
-            throw std::string("One of the patches could not be applied. Aborting.");
+            std::string errormsg = "One of the patches could not be applied. Aborting.\nPattern";
+            for (auto byte : pair.Marker)
+            {
+                errormsg += " 0x" + toHex(byte);
+            }
+            errormsg += "\nReplace";
+            for (auto byte : pair.Replace)
+            {
+                errormsg += " 0x" + toHex(byte);
+            }
+            throw errormsg;
         }
 
     }
