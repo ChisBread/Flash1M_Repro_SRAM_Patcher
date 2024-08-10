@@ -59,6 +59,25 @@ int ReadFile(const std::string& filename, std::vector<unsigned char>& buffer)
     CloseHandle(hFile);
     return 0;
 }
+
+int WriteFile(const std::string& filename, const std::vector<unsigned char>& buffer)
+{
+    HANDLE hFile = CreateFile(filename.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        return -1;
+    }
+
+    DWORD dwBytesWritten;
+    if (!WriteFile(hFile, buffer.data(), buffer.size(), &dwBytesWritten, NULL))
+    {
+        CloseHandle(hFile);
+        return -1;
+    }
+
+    CloseHandle(hFile);
+    return 0;
+}
 #endif // WIN32
 
 
@@ -95,9 +114,9 @@ int main(int argc, char* argv[])
 
     try {
 
+        std::string applicableName;
         for (PatchSet patchset : patchsets)
         {
-            std::string applicableName;
             if (patchset.isApplicable(file_buffer, &applicableName))
             {
                 std::cout << "Applying patches for " << applicableName << std::endl;
@@ -120,14 +139,48 @@ int main(int argc, char* argv[])
         {
             split = "\\";
         }
-        ss << path.parent_path().string() << split + "output_" << path.filename().string();
+        if (applicableName.find("FLASH1M") != std::string::npos)
+        {
+            ss << path.parent_path().string() << split + "[1MSRAM]" << path.filename().string();
+        }
+        else 
+        {
+
+            ss << path.parent_path().string() << split + "[SRAM]" << path.filename().string();
+        }
         std::string outputfilename = ss.str();
 
         std::cout << "Success! Wrote " << outputfilename << std::endl;
-
+#ifndef _WIN32
         std::ofstream output(outputfilename, std::ios::out | std::ios::binary);
         output.write((char*) file_buffer.data(), file_buffer.size());
         output.close();
+#else
+        std::string winfilename = filepath;
+        for (int i = filepath.size() - 1; i >= 0; i--)
+        {
+            if (filepath[i] == '/' || filepath[i] == '\\')
+            {
+                winfilename = filepath.substr(0, i + 1);
+                if (applicableName.find("FLASH1M") != std::string::npos)
+                {
+                    winfilename += "[1MSRAM]";
+                }
+                else
+                {
+                    winfilename += "[SRAM]";
+                }
+                winfilename += filepath.substr(i + 1);
+                break;
+            }
+        }
+        ret = WriteFile(winfilename, file_buffer);
+        if (ret != 0)
+        {
+            std::cout << "Error: Could not write file!" << std::endl;
+            return 1;
+        }
+#endif // WIN32
         retCode = 0;
 
     } catch (std::string& message) {
