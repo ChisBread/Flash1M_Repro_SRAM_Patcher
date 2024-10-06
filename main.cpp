@@ -19,21 +19,21 @@ static void init()
 {
     patchsets.push_back(*(new FLASH512()));
 
-    patchsets.push_back(*(new FLASH1M_V102()));
+    // patchsets.push_back(*(new FLASH1M_V102()));
 
-    patchsets.push_back(*(new FLASH1M_V103()));
+    // patchsets.push_back(*(new FLASH1M_V103()));
 
-    patchsets.push_back(*(new EEPROM()));
+    // patchsets.push_back(*(new EEPROM()));
 
-    patchsets.push_back(*(new EEPROM_V124()));
+    // patchsets.push_back(*(new EEPROM_V124()));
 
-    patchsets.push_back(*(new EEPROM_V126));
+    // patchsets.push_back(*(new EEPROM_V126));
 
-    patchsets.push_back(*(new FLASH_1()));
+    // patchsets.push_back(*(new FLASH_1()));
 
-    patchsets.push_back(*(new FLASH_2()));
+    // patchsets.push_back(*(new FLASH_2()));
 
-    patchsets.push_back(*(new FLASH_3()));
+    // patchsets.push_back(*(new FLASH_3()));
 }
 
 #ifdef _WIN32
@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
         else 
         {
 
-            ss << path.parent_path().string() << split + "[SRAM]" << path.filename().string();
+            ss << path.parent_path().string() << split + "[FLASH512DI]" << path.filename().string();
         }
         std::string outputfilename = ss.str();
 
@@ -168,7 +168,7 @@ int main(int argc, char* argv[])
                 }
                 else
                 {
-                    winfilename += "[SRAM]";
+                    winfilename += "[FLASH512DI]";
                 }
                 winfilename += filepath.substr(i + 1);
                 break;

@@ -53,3 +53,4 @@ dkms.conf
 .vscode/settings.json
 build/*
 .cache/*
+build_flash512/*
