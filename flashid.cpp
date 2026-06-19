@@ -25,7 +25,10 @@ std::vector<PatchSet> createFlashIdBypassPatchsets()
     patchsets.push_back(flash1mV103);
 
     PatchSet flash512("FLASH512");
-    flash512.addPatch(bytes(FLASH512_MARKER_2), bytes(FLASH512_REPLACE_2));
+    flash512.addPatch(std::vector<unsigned char> {(0xff),(0xf7),(0x88),(0xfd),(0x00),(0x04),(0x03),(0x0c),
+                                                  (0x03),(0x4a),(0x01),(0x24)},
+                      std::vector<unsigned char> {(0xff),(0xf7),(0x88),(0xfd),(0x00),(0x04),(0x03),(0x0c),
+                                                  (0x03),(0x4a),(0x00),(0x24)});
     patchsets.push_back(flash512);
 
     PatchSet flashV120(std::vector<std::string>({"FLASH_V120", "FLASH_V121"}));
