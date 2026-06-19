@@ -1,6 +1,7 @@
 #ifndef PATCHSET_H
 #define PATCHSET_H
 
+#include <cstdint>
 #include <vector>
 #include <utility>
 #include <string>

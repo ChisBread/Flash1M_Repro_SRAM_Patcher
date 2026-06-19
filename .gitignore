@@ -52,4 +52,5 @@ Mkfile.old
 dkms.conf
 .vscode/settings.json
 build/*
+build-*/
 .cache/*

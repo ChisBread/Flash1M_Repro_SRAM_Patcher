@@ -1,5 +1,6 @@
 #include "patchset.h"
 #include <algorithm>
+#include <cstdint>
 #include <iostream>
 
 
@@ -43,7 +44,7 @@ int64_t PatchSet::findIndex(std::vector<unsigned char>* data, Patch* patch)
 
     int64_t index = -1;
 
-    if (data->size() > patch->Marker.size())
+    if (data->size() >= patch->Marker.size())
     {
         uint64_t data_size = data->size();
         uint64_t marker_size = patch->Marker.size();
@@ -98,12 +99,11 @@ std::string toHex(unsigned char c)
 
 void PatchSet::applyPatches(std::vector<unsigned char>* data)
 {
-    uint8_t index = 0U;
     for (Patch pair : this->patches)
     {
         int64_t index = this->findIndex(data, &pair);
 
-        if ((index > 0) && ((data->size() - index) >= pair.Replace.size()))
+        if ((index >= 0) && ((data->size() - index) >= pair.Replace.size()))
         {
             for (auto replace_byte : pair.Replace)
             {
